@@ -1,35 +1,37 @@
 # 🐟 Luseradar
 
-Luseradar predikerer risikoen for lakselus i norske oppdrettsanlegg. Brukeren velger et anlegg og en prognoseperiode, og en maskinlæringsmodell trent på åpne data fra BarentsWatch estimerer lusenivået de kommende ukene.
+Luseradar varsler om et oppdrettsanlegg kommer til å passere lusegrensen de neste 1–3 ukene, basert kun på åpne data fra BarentsWatch. Resultatet vises på en nettside som et kart over anlegg, farget etter risiko.
 
 **Live demo:** TODO: lenke til Streamlit Community Cloud
 **Video:** TODO: lenke til video (reserve hvis live-demoen er nede)
-**Rapport:** [report.md](report.md)
+**Rapport:** TODO: lenke til rapporten (f.eks. [report.pdf](report.pdf))
 
 ---
 
 ## Funksjonalitet
 
-- TODO: Velg anlegg (navn / lokalitetsnummer / kart?)
-- Velg hvor mange uker fram i tid prognosen skal gjelde
-- TODO: Vis predikert lusenivå (og om det er over lusegrensen)
-- TODO: Vis historikk for anlegget
+- Kart over oppdrettsanlegg, farget etter risikoen for å passere lusegrensen
+- Velg prognosehorisont (TODO: 1–3 uker, eller bare 2 uker)
+- TODO: Klikk på et anlegg for å se historikk og predikert risiko
+
+## Problem og tilnærming
+
+Myndighetene setter en grense for gjennomsnittlig antall voksne hunnlus per fisk (0,5, strengere om våren). Går et anlegg over grensen, må fisken behandles, ofte på kort varsel. BarentsWatch publiserer lusetellingene, men bare som historikk.
+
+Luseradar behandler dette som et **binært klassifiseringsproblem**: Vil anlegget være over lusegrensen om *h* uker? Modellen gir en sannsynlighet per anlegg, som vises som risiko på kartet.
 
 ## Data
 
-Data hentes fra [BarentsWatch Fiskehelse-API](https://www.barentswatch.no/) (åpne data, NLOD-lisens).
+- **Kilde:** [BarentsWatch Fish Health API](https://developer.barentswatch.no/docs/fishhealth), åpne data under Norsk lisens for offentlige data (NLOD).
+- **Innhold:** Ukentlige lusetellinger per lokalitet, med sjøtemperatur, behandlinger og posisjon.
+- **Periode:** TODO (f.eks. 2012–2025)
+- **Mengde:** TODO: antall lokaliteter og antall rader etter rensing
 
-- TODO: Hvilke endepunkter/datasett brukes (lusetellinger, sjøtemperatur, …)
-- TODO: Tidsperiode som brukes til trening (f.eks. 2015–2025)
-- TODO: Antall anlegg og antall rader etter rensing
-
-For å hente data trenger du en gratis API-klient fra BarentsWatch:
-1. Logg inn på BarentsWatch og opprett en API-klient under «Min side».
-2. Kopier client ID og client secret inn i `.env` (se under).
+Dataene lastes ned én gang med `fetch_lice.py` og lagres lokalt. Modellen trenes aldri direkte mot API-et.
 
 ## Installasjon
 
-Python 3.14.3
+Krever Python TODO: versjon.
 
 ```bash
 git clone https://github.com/sharoy674281/luserader.git
@@ -52,9 +54,10 @@ Installer avhengigheter:
 pip install -r requirements.txt
 ```
 
-## Konfigurasjon
+## API-tilgang (kun nødvendig for å laste ned data på nytt)
 
-Kopier malen og fyll inn verdiene:
+1. Registrer en gratis API-klient hos BarentsWatch, se [Application registration](https://developer.barentswatch.no/docs/appreg).
+2. Kopier malen og fyll inn klientens ID og secret:
 
 ```bash
 cp .env.example .env        # Windows: copy .env.example .env
@@ -62,24 +65,27 @@ cp .env.example .env        # Windows: copy .env.example .env
 
 | Variabel | Beskrivelse |
 |---|---|
-| TODO: `BW_CLIENT_ID` | Client ID fra BarentsWatch |
-| TODO: `BW_CLIENT_SECRET` | Client secret fra BarentsWatch |
+| TODO | Client ID fra BarentsWatch |
+| TODO | Client secret fra BarentsWatch |
 
 `.env` er lagt i `.gitignore` og skal aldri committes.
 
 ## Reprodusere resultatene
 
-TODO: Tilpass til faktiske skript/notebooks.
+TODO: Tilpass til de faktiske skriptene og notebookene.
 
 ```bash
-# 1. Hent rådata fra BarentsWatch
-python TODO_hent_data.py
+# 1. Last ned lusetellinger fra BarentsWatch (krever .env)
+python fetch_lice.py
 
-# 2. Forbehandle og bygg features
-python TODO_forbehandling.py
+# 2. Rens data og bygg features
+python TODO_features.py
 
-# 3. Tren og evaluer modellen (lagrer modellen til models/)
-python TODO_tren_modell.py
+# 3. Tren modellen, evaluer på testsettet og lagre modellen
+python TODO_train.py
+
+# 4. Beregn prediksjoner for siste uke (brukes av nettsiden)
+python TODO_predict.py
 ```
 
 ## Kjøre nettsiden lokalt
@@ -92,45 +98,54 @@ streamlit run app.py
 
 ## Publisering
 
-Appen er publisert med [Streamlit Community Cloud](https://streamlit.io/cloud):
+Appen kjører på [Streamlit Community Cloud](https://streamlit.io/cloud). Prediksjonene beregnes på forhånd, så nettsiden trenger ikke API-nøkler for å vise kartet.
+
 1. Koble GitHub-repoet til Streamlit Community Cloud og velg `app.py` som hovedfil.
-2. Legg inn variablene fra `.env` under *Settings → Secrets*.
+2. Trenger appen API-tilgang, legges variablene fra `.env` inn under *Settings → Secrets*.
 
 ## Modell og resultater
 
-| Modell | TODO: MAE | TODO: RMSE |
-|---|---|---|
-| Baseline (lusenivå neste uke = denne uka) | TODO | TODO |
-| TODO: modell (f.eks. RandomForestRegressor) | TODO | TODO |
+- **Datasplitt:** på tid, ikke tilfeldig. Trening: TODO (eldre år). Validering: TODO. Test: TODO (nyeste år). Da ser ikke modellen framtiden under trening.
+- **Metrikker:** PR-AUC, recall og antall falske alarmer. Accuracy brukes ikke, fordi de fleste anleggsuker ligger under grensen, og en modell som alltid svarer «nei» ville fått høy accuracy.
+- **Terskel:** valgt på valideringssettet slik at recall prioriteres. Det er verre å gå glipp av en overskridelse enn å gi en falsk alarm.
 
-- Treningsdata: TODO (eldre uker). Testdata: TODO (nyeste uker). Data er splittet på **tid**, ikke tilfeldig, slik at modellen ikke ser framtiden under trening.
-- Se [report.md](report.md) for detaljer om valg av features, hyperparametersøk og evaluering.
+| Modell | PR-AUC | Recall | Falske alarmer per anlegg per år |
+|---|---|---|---|
+| Baseline: «over grensen nå → over grensen om *h* uker» | TODO | TODO | TODO |
+| TODO: modell (f.eks. LightGBM) | TODO | TODO | TODO |
+
+Se rapporten for feature importance og feilanalyse.
 
 ## Begrensninger
 
-- TODO: f.eks. anlegg med få tellinger, sesongvariasjon, ingen data om behandlinger, …
+- Modellen bruker bare åpne data. Interne data som behandlingsplaner og fiskehelse er ikke med.
+- TODO: f.eks. anlegg med få tellinger, endringer i dataformatet hos BarentsWatch, data drift ved varmere sjø
 
 ## Prosjektstruktur
 
 ```
 luserader/
 ├── app.py              # Streamlit-nettsiden
+├── fetch_lice.py       # Nedlasting fra BarentsWatch
 ├── requirements.txt    # Python-avhengigheter
 ├── .env.example        # Mal for miljøvariabler
-├── report.md           # Prosjektrapport
-└── TODO                # data/, notebooks/, models/, src/ …
+├── TODO                # data/, notebooks/, models/ …
+└── TODO                # rapporten
 ```
 
 ## Kilder og bruk av AI-verktøy
 
-- BarentsWatch Fiskehelse-API: TODO lenke
+- BarentsWatch. *Fish Health API.* https://developer.barentswatch.no/docs/fishhealth
+- BarentsWatch. *Application registration and authentication.* https://developer.barentswatch.no/docs/appreg
 - Géron, A. *Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow* (O'Reilly)
-- TODO: Andre kilder (artikler, tutorials, kodeeksempler)
-- **AI-verktøy:** TODO: hvilke verktøy (f.eks. Claude, ChatGPT, Copilot) og hva de ble brukt til (f.eks. feilsøking, kodeforslag, språkvask av rapporten).
+- TODO: Lakselusforskriften (Lovdata), dokumentasjon for LightGBM og Streamlit, og andre kilder
+- **AI-verktøy:** Claude (Anthropic) ble brukt til idéutvikling, planlegging, kodeutkast og utkast til rapport og README. TODO: hvordan dere har kontrollert resultatet.
+
+Fullstendig kildeliste står i rapporten.
 
 ## Forfattere
 
+- David Gotten
 - Rakhman Ismailov
-- David TODO: etternavn
 
 Prosjektet er laget som avsluttende prosjekt i DAT158 ved Høgskulen på Vestlandet, høsten 2026.
