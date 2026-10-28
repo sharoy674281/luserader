@@ -17,7 +17,7 @@ st.set_page_config(page_title="Luseradar", page_icon="🐟", layout="wide")
 
 st.markdown("""
 <style>
-.block-container {padding-top: 1rem; padding-bottom: 1rem; max-width: 1400px;}
+.block-container {padding-top: 2.8rem; padding-bottom: 1rem; max-width: 1400px;}
 h1 {font-size: 2rem !important; padding: 0 !important;}
 [data-testid="stMetricValue"] {font-size: 1.35rem;}
 [data-testid="stMetric"] {padding: .5rem .8rem !important;}
