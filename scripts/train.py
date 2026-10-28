@@ -22,11 +22,13 @@ import joblib
 import matplotlib
 import numpy as np
 import pandas as pd
+from sklearn.base import clone
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.inspection import permutation_importance
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, precision_recall_curve, roc_auc_score
+from sklearn.model_selection import GridSearchCV, PredefinedSplit
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -124,13 +126,20 @@ def main() -> None:
             n_jobs=-1, random_state=SEED,
         ),
     }
-    # Litt hyperparametersøk for gradient boosting, valgt på validering.
-    for lr in (0.05, 0.1):
-        for leaves in (15, 31, 63):
-            candidates[f"Gradient boosting (lr={lr}, leaves={leaves})"] = HistGradientBoostingClassifier(
-                learning_rate=lr, max_leaf_nodes=leaves, max_iter=400, early_stopping=True,
-                validation_fraction=0.1, random_state=SEED,
-            )
+    # Hyperparametersøk for gradient boosting med GridSearchCV (Géron kap. 2). Vanlig k-fold ville blandet
+    # framtid og fortid, så vi bruker PredefinedSplit: tren på treningsårene, scor på valideringsåret.
+    hgb = HistGradientBoostingClassifier(max_iter=400, early_stopping=True, validation_fraction=0.1,
+                                         random_state=SEED)
+    param_grid = {"learning_rate": [0.05, 0.1], "max_leaf_nodes": [15, 31, 63]}
+    fold = np.r_[np.full(len(Xtr), -1), np.zeros(len(Xva))]  # -1 = alltid trening, 0 = validering
+    search = GridSearchCV(hgb, param_grid, cv=PredefinedSplit(fold), scoring="average_precision", refit=False)
+    search.fit(pd.concat([Xtr, Xva]), np.r_[ytr, yva])
+    grid = pd.DataFrame(search.cv_results_)[["params", "mean_test_score"]]
+    print("GridSearchCV, gradient boosting (val PR-AUC):")
+    for _, r in grid.iterrows():
+        print(f"  {r['params']}  {r['mean_test_score']:.3f}")
+    print(f"  Beste: {search.best_params_}\n")
+    candidates["Gradient boosting"] = clone(hgb).set_params(**search.best_params_)
 
     val_scores = {}
     for name, fn in baselines.items():
@@ -193,7 +202,7 @@ def main() -> None:
     print("\nViktigste features:\n" + importance.sort_values(ascending=False).head(8).round(4).to_string())
 
     # --- Endelig modell: samme oppsett, trent på alle data med label ---
-    final = fitted[best_name].__class__(**fitted[best_name].get_params())
+    final = clone(fitted[best_name])
     final.fit(labeled[FEATURES], labeled["y"])
     MODEL_DIR.mkdir(exist_ok=True)
     joblib.dump({"model": final, "features": FEATURES, "threshold": threshold, "horizon": HORIZON,
@@ -217,6 +226,8 @@ def main() -> None:
         "positive_rate": round(float(labeled["y"].mean()), 4),
         "validation_pr_auc": {k: round(float(v), 4) for k, v in val_scores.items()},
         "chosen_model": best_name,
+        "best_params": search.best_params_,
+        "grid_search": {str(r["params"]): round(float(r["mean_test_score"]), 4) for _, r in grid.iterrows()},
         "threshold": threshold,
         "test": results,
         "permutation_importance": importance.sort_values(ascending=False).round(5).to_dict(),

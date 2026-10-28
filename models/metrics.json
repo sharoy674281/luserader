@@ -15,14 +15,21 @@
     "Lineær trend": 0.1001,
     "Logistisk regresjon": 0.1788,
     "Random forest": 0.2326,
-    "Gradient boosting (lr=0.05, leaves=15)": 0.2592,
-    "Gradient boosting (lr=0.05, leaves=31)": 0.2578,
-    "Gradient boosting (lr=0.05, leaves=63)": 0.2539,
-    "Gradient boosting (lr=0.1, leaves=15)": 0.2477,
-    "Gradient boosting (lr=0.1, leaves=31)": 0.2438,
-    "Gradient boosting (lr=0.1, leaves=63)": 0.2415
+    "Gradient boosting": 0.2592
   },
-  "chosen_model": "Gradient boosting (lr=0.05, leaves=15)",
+  "chosen_model": "Gradient boosting",
+  "best_params": {
+    "learning_rate": 0.05,
+    "max_leaf_nodes": 15
+  },
+  "grid_search": {
+    "{'learning_rate': 0.05, 'max_leaf_nodes': 15}": 0.2592,
+    "{'learning_rate': 0.05, 'max_leaf_nodes': 31}": 0.2578,
+    "{'learning_rate': 0.05, 'max_leaf_nodes': 63}": 0.2539,
+    "{'learning_rate': 0.1, 'max_leaf_nodes': 15}": 0.2477,
+    "{'learning_rate': 0.1, 'max_leaf_nodes': 31}": 0.2438,
+    "{'learning_rate': 0.1, 'max_leaf_nodes': 63}": 0.2415
+  },
   "threshold": 0.09000000000000001,
   "test": {
     "Alltid nei": {
@@ -75,7 +82,7 @@
       "n": 79494,
       "positives": 2394
     },
-    "Gradient boosting (lr=0.05, leaves=15)": {
+    "Gradient boosting": {
       "pr_auc": 0.2382,
       "roc_auc": 0.8855,
       "recall": 0.6228,
