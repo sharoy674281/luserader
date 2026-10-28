@@ -1,0 +1,112 @@
+{
+  "horizon_weeks": 2,
+  "split": {
+    "train": "<= 2022",
+    "validation": "2023",
+    "test": ">= 2024",
+    "n_train": 189620,
+    "n_val": 27322,
+    "n_test": 79494
+  },
+  "positive_rate": 0.0316,
+  "validation_pr_auc": {
+    "Alltid nei": 0.0185,
+    "Persistens (lus nå / grense)": 0.1481,
+    "Lineær trend": 0.1001,
+    "Logistisk regresjon": 0.1788,
+    "Random forest": 0.2326,
+    "Gradient boosting (lr=0.05, leaves=15)": 0.2592,
+    "Gradient boosting (lr=0.05, leaves=31)": 0.2578,
+    "Gradient boosting (lr=0.05, leaves=63)": 0.2539,
+    "Gradient boosting (lr=0.1, leaves=15)": 0.2477,
+    "Gradient boosting (lr=0.1, leaves=31)": 0.2438,
+    "Gradient boosting (lr=0.1, leaves=63)": 0.2415
+  },
+  "chosen_model": "Gradient boosting (lr=0.05, leaves=15)",
+  "threshold": 0.09000000000000001,
+  "test": {
+    "Alltid nei": {
+      "pr_auc": 0.0301,
+      "roc_auc": 0.5,
+      "recall": 0.0,
+      "precision": 0.0,
+      "false_alarms_per_site_year": 0.0,
+      "recall_new_exceedances": 0.0,
+      "n": 79494,
+      "positives": 2394
+    },
+    "Persistens (lus nå / grense)": {
+      "pr_auc": 0.1519,
+      "roc_auc": 0.8235,
+      "recall": 0.2598,
+      "precision": 0.2362,
+      "false_alarms_per_site_year": 0.771,
+      "recall_new_exceedances": 0.0,
+      "n": 79494,
+      "positives": 2394
+    },
+    "Lineær trend": {
+      "pr_auc": 0.1302,
+      "roc_auc": 0.7395,
+      "recall": 0.4808,
+      "precision": 0.1077,
+      "false_alarms_per_site_year": 3.656,
+      "recall_new_exceedances": 0.3369,
+      "n": 79494,
+      "positives": 2394
+    },
+    "Logistisk regresjon": {
+      "pr_auc": 0.1875,
+      "roc_auc": 0.8767,
+      "recall": 0.6491,
+      "precision": 0.1332,
+      "false_alarms_per_site_year": 3.878,
+      "recall_new_exceedances": 0.531,
+      "n": 79494,
+      "positives": 2394
+    },
+    "Random forest": {
+      "pr_auc": 0.218,
+      "roc_auc": 0.8839,
+      "recall": 0.6454,
+      "precision": 0.1379,
+      "false_alarms_per_site_year": 3.703,
+      "recall_new_exceedances": 0.522,
+      "n": 79494,
+      "positives": 2394
+    },
+    "Gradient boosting (lr=0.05, leaves=15)": {
+      "pr_auc": 0.2382,
+      "roc_auc": 0.8855,
+      "recall": 0.6228,
+      "precision": 0.1481,
+      "false_alarms_per_site_year": 3.289,
+      "recall_new_exceedances": 0.4949,
+      "n": 79494,
+      "positives": 2394
+    }
+  },
+  "permutation_importance": {
+    "ratio_to_limit": 0.05554,
+    "mobile": 0.05121,
+    "lat": 0.04466,
+    "lice_roll4_mean": 0.02798,
+    "lice_lag3": 0.01108,
+    "mobile_lag1": 0.01083,
+    "lice_lag1": 0.01075,
+    "lice_roll4_max": 0.01011,
+    "limit_future": 0.0085,
+    "week_sin": 0.00797,
+    "lice_lag2": 0.0075,
+    "area_lice_mean": 0.00666,
+    "week_cos": 0.00539,
+    "stationary": 0.00507,
+    "area_lice_mean_lag1": 0.00445,
+    "sea_temp_roll4": 0.0039,
+    "lice": 0.00347,
+    "sea_temp": 0.00326,
+    "lice_diff1": 0.00286,
+    "area_id": -0.00081
+  },
+  "prediction_week": "2026-W43"
+}
