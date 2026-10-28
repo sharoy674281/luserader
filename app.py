@@ -18,12 +18,11 @@ st.set_page_config(page_title="Luseradar", page_icon="🐟", layout="wide")
 st.markdown("""
 <style>
 .block-container {padding-top: 2.8rem; padding-bottom: 1rem; max-width: 1400px;}
+html, [data-testid="stMain"] {scrollbar-gutter: stable;}  /* hindrer at siden hopper sidelengs mellom faner */
 h1 {font-size: 2rem !important; padding: 0 !important;}
 [data-testid="stMetricValue"] {font-size: 1.35rem;}
 [data-testid="stMetric"] {padding: .5rem .8rem !important;}
 [data-testid="stTabs"] {margin-top: -.6rem;}
-[data-testid="stVerticalBlockBorderWrapper"], [data-testid="stDeckGlJsonChart"] {animation: fade .35s ease-out;}
-@keyframes fade {from {opacity: 0; transform: translateY(4px);} to {opacity: 1; transform: none;}}
 .legend {display: flex; flex-wrap: wrap; gap: .9rem; font-size: .85rem; color: #4a5a63; margin-top: .3rem;}
 .legend span {display: inline-flex; align-items: center; gap: .35rem;}
 .legend i {width: .8rem; height: .8rem; border-radius: 50%; display: inline-block;}
@@ -154,21 +153,26 @@ with tab_radar:
     mapdata["risk_pct"] = (100 * mapdata["risk"]).round(0)
     mapdata["lice"] = mapdata["lice"].round(2)
 
-    center = (mapdata["lat"].mean(), mapdata["lon"].mean(), 6.2) if area != "Hele kysten" else (65.0, 15.5, 3.35)
+    if area != "Hele kysten" and len(mapdata):
+        # Zoom slik at hele produksjonsområdet får plass.
+        span = max(mapdata["lat"].max() - mapdata["lat"].min(), (mapdata["lon"].max() - mapdata["lon"].min()) / 2, 0.3)
+        center = (mapdata["lat"].mean(), mapdata["lon"].mean(), float(np.clip(np.log2(160 / span), 4.5, 8.5)))
+    else:
+        center = (65.0, 15.5, 3.35)
     picked = preds[preds["locality_no"] == st.session_state.site]
     if len(picked):
-        center = (picked["lat"].iloc[0], picked["lon"].iloc[0], 7.5)
+        center = (picked["lat"].iloc[0], picked["lon"].iloc[0], 6.8)
     deck = pdk.Deck(
         layers=[pdk.Layer(
             "ScatterplotLayer", id="selected", data=picked[["lat", "lon"]], get_position="[lon, lat]",
-            get_radius=9000, radius_min_pixels=14, filled=False, stroked=True,
+            get_radius=6000, radius_min_pixels=13, radius_max_pixels=13, filled=False, stroked=True,
             get_line_color=[20, 35, 43, 230], line_width_min_pixels=2.5,
         ), pdk.Layer(
             "ScatterplotLayer", id="farms", data=mapdata[["locality_no", "locality_name", "lat", "lon", "lice",
                                                           "lice_limit" if view == "Historikk" else "limit_future",
                                                           "risk_pct", "color", "radius"]],
             get_position="[lon, lat]", get_fill_color="color", get_radius="radius",
-            radius_min_pixels=3, radius_max_pixels=14, stroked=True, get_line_color=[255, 255, 255, 160],
+            radius_min_pixels=3, radius_max_pixels=9, stroked=True, get_line_color=[255, 255, 255, 160],
             line_width_min_pixels=0.5, pickable=True, auto_highlight=True,
             transitions={"getFillColor": 600, "getRadius": 600},
         )],
@@ -240,7 +244,8 @@ Klikk på et anlegg i kartet, i lista eller søk for å se detaljer.
             m2.metric(f"Grense om {H} uker", f"{row['limit_future']:.1f}",
                       help="Lusegrensen er 0,5 voksne hunnlus per fisk, og 0,2 i vårukene da villaksen vandrer ut.")
 
-            h = history[history["locality_no"] == site].tail(52)
+            h = history[history["locality_no"] == site]
+            h = h[h["date"] > h["date"].max() - pd.Timedelta(weeks=52)]
             base = alt.Chart(h).encode(x=alt.X("date:T", title=None, axis=alt.Axis(format="%b")))
             line = base.mark_line(point=alt.OverlayMarkDef(size=18), color="#0f766e").encode(
                 y=alt.Y("adult_female:Q", title="Hunnlus per fisk"),
