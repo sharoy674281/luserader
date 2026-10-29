@@ -3,8 +3,7 @@
 Luseradar varsler om et oppdrettsanlegg kommer til å passere lusegrensen om to uker, basert kun på åpne data fra BarentsWatch. En maskinlæringsmodell gir en sannsynlighet per anlegg, og resultatet vises på en nettside som et kart over anlegg farget etter risiko.
 
 **Live demo:** https://luseradar.streamlit.app
-**Video:** TODO: lenke til video (reserve hvis live-demoen er nede)
-**Rapport:** [report.md](report.md)
+**Rapport:** (luseradar innlevering.pdf)
 
 ---
 
@@ -154,7 +153,7 @@ luserader/
 - Géron, A. *Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow* (O'Reilly)
 - Lovdata. *Forskrift om bekjempelse av lakselus i akvakulturanlegg* (lakselusforskriften), FOR-2012-12-05-1140.
 - Streamlit- og scikit-learn-dokumentasjonen.
-- **AI-verktøy:** Claude (Anthropic) ble brukt til idéutvikling, planlegging, kodeutkast og utkast til rapport og README. TODO: hvordan dere har kontrollert resultatet.
+- **AI-verktøy:** Claude (Anthropic) ble brukt til idéutvikling, planlegging, kodeutkast og utkast til rapport og README, samt feilsøking. Vi har lest gjennom og kjørt koden selv, sjekket tallene mot `models/metrics.json` og testet nettsiden manuelt.
 
 Fullstendig kildeliste står i rapporten.
 
